@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="verde_panini">#1B5E20</color>
+    <color name="verde_oscuro">#0A3D0A</color>
+    <color name="verde_claro">#E8F5E9</color>
+    <color name="dorado_panini">#F9A825</color>
+    <color name="rojo_pendiente">#C62828</color>
+    <color name="colorPrimary">#1B5E20</color>
+    <color name="colorPrimaryDark">#0A3D0A</color>
+    <color name="colorAccent">#F9A825</color>
+</resources>
