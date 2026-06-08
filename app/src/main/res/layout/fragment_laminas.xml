@@ -16,6 +16,14 @@
         android:textColor="@color/verde_panini"
         android:background="@android:color/white"/>
 
+    <SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:queryHint="Buscar por nombre o país..."
+        android:iconifiedByDefault="false"/>
+
     <TextView
         android:id="@+id/tvVacia"
         android:layout_width="match_parent"
