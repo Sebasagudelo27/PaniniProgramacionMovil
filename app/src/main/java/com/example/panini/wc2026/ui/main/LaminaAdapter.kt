@@ -59,7 +59,8 @@ class LaminaAdapter(
     companion object {
         val DIFF = object : DiffUtil.ItemCallback<Lamina>() {
             override fun areItemsTheSame(a: Lamina, b: Lamina) = a.id == b.id
-            override fun areContentsTheSame(a: Lamina, b: Lamina) = a == b
+            override fun areContentsTheSame(a: Lamina, b: Lamina) =
+                a.cantidadRepetidas == b.cantidadRepetidas && a.obtenida == b.obtenida
         }
     }
 }

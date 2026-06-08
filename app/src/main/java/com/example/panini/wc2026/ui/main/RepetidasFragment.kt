@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -22,6 +23,7 @@ class RepetidasFragment : Fragment() {
     private var _binding: FragmentLaminasBinding? = null
     private val binding get() = _binding!!
     private val viewModel: MainViewModel by activityViewModels()
+    private lateinit var adapter: LaminaAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, saved: Bundle?): View {
         _binding = FragmentLaminasBinding.inflate(inflater, container, false)
@@ -29,7 +31,7 @@ class RepetidasFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val adapter = LaminaAdapter(TipoLista.REPETIDAS) { laminaEntregada ->
+        adapter = LaminaAdapter(TipoLista.REPETIDAS) { laminaEntregada ->
             mostrarDialogoIntercambio(laminaEntregada)
         }
 
@@ -53,28 +55,41 @@ class RepetidasFragment : Fragment() {
             if (pendientes.isEmpty()) {
                 AlertDialog.Builder(requireContext())
                     .setTitle("Sin pendientes")
-                    .setMessage("No tienes láminas pendientes para recibir en un intercambio.")
+                    .setMessage("No tienes láminas pendientes.")
                     .setPositiveButton("OK", null)
                     .show()
                 return@launch
             }
 
-            val nombres = pendientes.map { "${it.numero} - ${it.nombre} (${it.pais})" }.toTypedArray()
+            val input = AutoCompleteTextView(requireContext())
+            input.hint = "Escribe nombre o número"
+            input.setPadding(48, 32, 48, 32)
+
+            val nombres = pendientes.map { "${it.numero} - ${it.nombre}" }
+            val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, nombres)
+            input.setAdapter(arrayAdapter)
+            input.threshold = 1
+
             var seleccionada: Lamina? = null
-            var indiceSeleccionado = -1
+            input.setOnItemClickListener { _, _, position, _ ->
+                val textoSeleccionado = arrayAdapter.getItem(position) ?: return@setOnItemClickListener
+                seleccionada = pendientes.find { "${it.numero} - ${it.nombre}" == textoSeleccionado }
+            }
 
             AlertDialog.Builder(requireContext())
                 .setTitle("Intercambiar: ${laminaEntregada.nombre}")
-                .setMessage("Entregás: ${laminaEntregada.nombre} (${laminaEntregada.cantidadRepetidas} repetidas)\n\nSeleccioná la lámina que recibís:")
-                .setSingleChoiceItems(nombres, -1) { _, which ->
-                    indiceSeleccionado = which
-                    seleccionada = pendientes[which]
-                }
-                .setPositiveButton("Confirmar intercambio") { _, _ ->
+                .setMessage("Entregás: ${laminaEntregada.nombre}")
+                .setView(input)
+                .setPositiveButton("Confirmar") { _, _ ->
                     seleccionada?.let { laminaRecibida ->
                         viewModel.registrarIntercambio(laminaEntregada, laminaRecibida)
                         mostrarConfirmacion(laminaEntregada, laminaRecibida)
-                    }
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            val lista = viewModel.laminasRepetidas.first()
+                            adapter.submitList(null)
+                            adapter.submitList(lista)
+                        }
+                    } ?: Toast.makeText(requireContext(), "Selecciona una lámina", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("Cancelar", null)
                 .show()
